@@ -1,6 +1,7 @@
 import numpy as np
 import sklearn
 from sklearn import metrics
+from sklearn.neighbors import NearestNeighbors
 import sys
 import scipy
 from scipy import stats
@@ -15,6 +16,18 @@ warnings.simplefilter('error') # treat warnings as errors
 from matplotlib.pyplot import figure
 figure(num=None, figsize=(10, 8), dpi=80, facecolor='w', edgecolor='k')
 matplotlib.rc('font', size=24)
+
+def ComputePredictions(X_train, y_train, X_new, num_neighbors=20):
+    nneighbors = NearestNeighbors(n_neighbors=num_neighbors, algorithm='ball_tree').fit(X_train)
+    distances, indicies = nneighbors.kneighbors(X_new)
+    pred_new = list()
+    for i in range(X_new.shape[0]):
+        if (y_train[indicies[i]] == 1).sum() > (num_neighbors / 2):
+            pred_new.append(1)
+        else:
+            pred_new.append(0)
+    pred_new = np.array(pred_new)
+    return pred_new
 
 def Parse(fname, seed):
     all_rows = []
@@ -63,3 +76,11 @@ print('  {0: >10} {1: >4} {2: >4}'.format('dataset',
                                           str((y == 0).sum()),
                                           str((y == 1).sum())))
 
+num_rows = temp_ar.shape[0]
+X_train = X[0: int(num_rows * 0.8)]
+y_train = y[0: int(num_rows * 0.8)]
+X_new = X[int(num_rows * 0.8):]
+y_new = y[int(num_rows * 0.8):]
+pred_new = ComputePredictions(X_train, y_train, X_new)
+# print("error %: " + str(100 * (np.mean(y_new[:, 0] != pred_new))))
+# import pdb; pdb.set_trace()
