@@ -68,9 +68,8 @@ def Parse(fname, seed):
     np.random.shuffle(temp_ar) # shuffle rows, set of columns remain the same
     return temp_ar
 
-if len(sys.argv) < 5 or sys.argv[1] not in {'spam.data', 'SAheart.data', 'zip.train'}:
-    help_str = """Execution example: python3 main.py <dataset> <stepSize> <maxiterations> <seed>
-The valid dataset values are: spam.data, SAheart.data, and zip.train.
+if len(sys.argv) < 4:
+    help_str = """Execution example: python3 main.py <stepSize> <maxiterations> <seed>
 stepSize must be a float
 maxiterations must be an int
 seed must be an int
@@ -81,7 +80,7 @@ seed must be an int
 stepSize = float(sys.argv[2])
 maxiterations = int(sys.argv[3])
 seed = int(sys.argv[4])
-temp_ar = Parse(sys.argv[1], seed)
+temp_ar = Parse("spam.data", seed)
 
 # temp_ar is randomly shuffled at this point
 num_rows = temp_ar.shape[0]
