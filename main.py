@@ -19,23 +19,23 @@ matplotlib.rc('font', size=24)
 
 def KFoldCV(X_mat,y_vec,ComputePredictions,num_folds=5):
     error_vec=list()
-    X_subset=list()
-    Y_subset=list()
+    X_subsets=list()
+    Y_subsets=list()
     num_rows = X_mat.shape[0]
     for i in range(num_folds):
         start = int(num_rows*i*(1/num_folds))
         end = int(num_rows*(i+1)*(1/num_folds))
-        X_subset.append(np.copy(X_mat[start:end]))
-        Y_subset.append(np.copy(y_vec[start:end]))
+        X_subsets.append(np.copy(X_mat[start:end]))
+        Y_subsets.append(np.copy(y_vec[start:end]))
     for i in range(num_folds):
-        X_train=copy.deepcopy(X_subset)
+        X_train=copy.deepcopy(X_subsets)
         del X_train[i]
         X_train=np.concatenate(X_train)
-        X_new=X_subset[i]
-        y_train=copy.deepcopy(Y_subset)
+        X_new=X_subsets[i]
+        y_train=copy.deepcopy(Y_subsets)
         del y_train[i]
         y_train=np.concatenate(y_train)
-        y_new=Y_subset[i]
+        y_new=Y_subsets[i]
         pred_new=ComputePredictions(X_train,y_train,X_new)
         error_vec.append(100 * (np.mean(y_new[:, 0] != pred_new)))
     return error_vec
