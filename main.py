@@ -9,13 +9,37 @@ import matplotlib
 matplotlib.use('agg')
 import matplotlib.pyplot as plt
 import os.path
-
+import copy
 import warnings
 warnings.simplefilter('error') # treat warnings as errors
 
 from matplotlib.pyplot import figure
 figure(num=None, figsize=(10, 8), dpi=80, facecolor='w', edgecolor='k')
 matplotlib.rc('font', size=24)
+
+def KFoldCV(X_mat,y_vec,ComputePredictions,num_folds=5):
+    error_vec=list()
+    X_subset=list()
+    Y_subset=list()
+    for i in range(num_folds):
+        X_subset.append(np.copy(X_mat[int(i*(1/num_folds)):int(((i+1)*(1/num_folds)))]))
+        Y_subset.append(np.copy(y_vec[int(i*(1/num_folds)):int(((i+1)*(1/num_folds)))]))
+    for i in range(num_folds):
+        X_train=copy.deepcopy(X_subset)
+        del X_train[i]
+        X_train=np.concatenate(X_train)
+        X_new=X_subset[i]
+        y_train=copy.deepcopy(Y_subset)
+        del y_train[i]
+        y_train=np.concatenate(y_train)
+        y_new=Y_subset[i]
+     
+        pred_new=ComputePredictions(X_train,y_train,X_new)
+        error_vec.append(100 * (np.mean(y_new[:, 0] != pred_new)))
+
+    return error_vec
+     
+
 
 def ComputePredictions(X_train, y_train, X_new, num_neighbors=20):
     nneighbors = NearestNeighbors(n_neighbors=num_neighbors, algorithm='ball_tree').fit(X_train)
@@ -65,22 +89,12 @@ temp_ar = Parse("spam.data", seed)
 # temp_ar is randomly shuffled at this point
 num_rows = temp_ar.shape[0]
 
-X = temp_ar[:, 0:-1] # m x n
-X = X.astype(float)
-y = np.array([temp_ar[:, -1]]).T # make it a row vector, m x 1
-y = y.astype(int)
+X_mat = temp_ar[:, 0:-1] # m x n
+X_mat = X_mat.astype(float)
+y_vec = np.array([temp_ar[:, -1]]).T # make it a row vector, m x 1
+y_vec = y_vec.astype(int)
 
-print('            y')
-print('  {0: >10} {1: >4} {2: >4}'.format('set', '0', '1'))
-print('  {0: >10} {1: >4} {2: >4}'.format('dataset',
-                                          str((y == 0).sum()),
-                                          str((y == 1).sum())))
+KFoldCV(X_mat,y_vec,ComputePredictions)
 
-num_rows = temp_ar.shape[0]
-X_train = X[0: int(num_rows * 0.8)]
-y_train = y[0: int(num_rows * 0.8)]
-X_new = X[int(num_rows * 0.8):]
-y_new = y[int(num_rows * 0.8):]
-pred_new = ComputePredictions(X_train, y_train, X_new)
 # print("error %: " + str(100 * (np.mean(y_new[:, 0] != pred_new))))
 # import pdb; pdb.set_trace()
