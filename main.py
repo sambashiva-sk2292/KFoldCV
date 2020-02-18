@@ -1,3 +1,6 @@
+# This Python file uses the following encoding: utf-8
+
+import os, sys
 import numpy as np
 import sklearn
 from sklearn import metrics
@@ -17,6 +20,15 @@ warnings.simplefilter('error') # treat warnings as errors
 from matplotlib.pyplot import figure
 figure(num=None, figsize=(10, 8), dpi=80, facecolor='w', edgecolor='k')
 matplotlib.rc('font', size=24)
+
+# TODO: Use the fold_vec and validation_fold_vec
+
+# These are row vectors which tell you what fold each row is in
+# This will make it easier to check after the fact and is what is specified
+# in the rubric
+
+# in NearestNeighborCV: with the X_mat, y_vec, best_k, test with X_new at the end
+# return what is specified in rubric
 
 def KFoldCV(X_mat,y_vec,ComputePredictions,num_folds=5):
     error_vec=list()
@@ -53,7 +65,7 @@ def ComputePredictions(X_train, y_train, X_new, num_neighbors=20):
     pred_new = np.array(pred_new)
     return pred_new
 
-def NearestNeighborsCV(X_mat,y_vec,X_new,num_folds=5,max_neighbors=20):
+def NearestNeighborsCV(X_mat,y_vec,num_folds=5,max_neighbors=20):
     num_rows = X_mat.shape[0]
     validation_fold_vec = np.repeat(np.arange(1,num_folds), num_rows, axis = 0)
     error_mat = np.zeros(shape = (num_folds, max_neighbors))
@@ -63,9 +75,10 @@ def NearestNeighborsCV(X_mat,y_vec,X_new,num_folds=5,max_neighbors=20):
         for inner_index in range(num_folds):
             error_mat[out_index, inner_index] = error_vec[inner_index]
     mean_error_vec = np.zeros(shape = (1,max_neighbors))
-    for index in range(max_neighbors)
+    for index in range(max_neighbors):
         mean_error_vec[index] = statistics.mean(error_mat[index, : ])
     best_neighbors = min(mean_error_vec)
+    return 
 
 def Parse(fname, seed):
     all_rows = []
