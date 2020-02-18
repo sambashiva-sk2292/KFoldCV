@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 import os.path
 import copy
 import warnings
+import statistics
 warnings.simplefilter('error') # treat warnings as errors
 
 from matplotlib.pyplot import figure
@@ -52,6 +53,20 @@ def ComputePredictions(X_train, y_train, X_new, num_neighbors=20):
     pred_new = np.array(pred_new)
     return pred_new
 
+def NearestNeighborsCV(X_mat,y_vec,X_new,num_folds=5,max_neighbors=20):
+    num_rows = X_mat.shape[0]
+    validation_fold_vec = np.repeat(np.arange(1,num_folds), num_rows, axis = 0)
+    error_mat = np.zeros(shape = (num_folds, max_neighbors))
+    error_mat = error_mat.transpose
+    for out_index in range(max_neighbors):
+        error_vec = KFoldCV(X_mat, y_vec, ComputePredictions, num_folds)
+        for inner_index in range(num_folds):
+            error_mat[out_index, inner_index] = error_vec[inner_index]
+    mean_error_vec = np.zeros(shape = (1,max_neighbors))
+    for index in range(max_neighbors)
+        mean_error_vec[index] = statistics.mean(error_mat[index, : ])
+    best_neighbors = min(mean_error_vec)
+
 def Parse(fname, seed):
     all_rows = []
     with open(fname) as fp:
@@ -60,7 +75,7 @@ def Parse(fname, seed):
             all_rows.append(row)
     temp_ar = np.array(all_rows, dtype=float)
     temp_ar = temp_ar.astype(float)
-    # standardize each column to have Î¼ = 0 and Ïƒ^(2) = 1
+    # standardize each column to have ¦Ì = 0 and ¦Ò^(2) = 1
     # in other words convert all elements to z-scores for each column
     for col in range(temp_ar.shape[1] - 1): # for all but last column (output)
         std = np.std(temp_ar[:, col])
