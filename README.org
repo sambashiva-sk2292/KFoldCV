@@ -16,7 +16,7 @@ python3 -m venv ./.venv
 #+BEGIN_SRC
 . ./.venv/bin/activate
 #+END_SRC
-**** 1.4.1 You can use an easy to remember bash alias
+**** 1.4.1 You can use an easy to remember bash alias to activate the venv
 ***** 1.4.1.1 Open your ~/.bashrc
 #+BEGIN_SRC
 vim ~/.bashrc
@@ -47,4 +47,3 @@ stepSize must be a float
 maxiterations must be an int
 seed must be an int
 
-n
