@@ -30,16 +30,18 @@ matplotlib.rc('font', size=24)
 # in NearestNeighborCV: with the X_mat, y_vec, best_k, test with X_new at the end
 # return what is specified in rubric
 
-def KFoldCV(X_mat,y_vec,ComputePredictions,num_folds=5):
-    error_vec=list()
-    X_subsets=list()
-    Y_subsets=list()
+def KFoldCV(X_mat,y_vec,ComputePredictions,fold_vec):
+    error_vec = list()
+    X_subsets = list()
+    Y_subsets = list()
     num_rows = X_mat.shape[0]
-    for i in range(num_folds):
-        start = int(num_rows*i*(1/num_folds))
-        end = int(num_rows*(i+1)*(1/num_folds))
-        X_subsets.append(np.copy(X_mat[start:end]))
-        Y_subsets.append(np.copy(y_vec[start:end]))
+    for i in range(1, fold_vec.max() + 1):
+        row_nums = list()
+        for j in range(fold_vec.shape[1]):
+            if(i == fold_vec[j]):
+                row_nums.append(j)
+        X_subsets.append(np.copy(X_mat[row_nums]))
+        y_subsets.append(np.copy(y_vec[row_nums]))
     for i in range(num_folds):
         X_train=copy.deepcopy(X_subsets)
         del X_train[i]
@@ -55,10 +57,10 @@ def KFoldCV(X_mat,y_vec,ComputePredictions,num_folds=5):
 
 def ComputePredictions(X_train, y_train, X_new, num_neighbors=20):
     nneighbors = NearestNeighbors(n_neighbors=num_neighbors, algorithm='ball_tree').fit(X_train)
-    distances, indicies = nneighbors.kneighbors(X_new)
+    distances, indices = nneighbors.kneighbors(X_new)
     pred_new = list()
     for i in range(X_new.shape[0]):
-        if (y_train[indicies[i]] == 1).sum() > (num_neighbors / 2):
+        if (y_train[indices[i]] == 1).sum() > (num_neighbors / 2):
             pred_new.append(1)
         else:
             pred_new.append(0)
@@ -71,7 +73,7 @@ def NearestNeighborsCV(X_mat,y_vec,num_folds=5,max_neighbors=20):
     error_mat = np.zeros(shape = (num_folds, max_neighbors))
     error_mat = error_mat.transpose
     for out_index in range(max_neighbors):
-        error_vec = KFoldCV(X_mat, y_vec, ComputePredictions, num_folds)
+        error_vec = KFoldCV(X_mat, y_vec, ComputePredictions, validation_fold_vec)
         for inner_index in range(num_folds):
             error_mat[out_index, inner_index] = error_vec[inner_index]
     mean_error_vec = np.zeros(shape = (1,max_neighbors))
@@ -123,9 +125,6 @@ X_mat = temp_ar[:, 0:-1] # m x n
 X_mat = X_mat.astype(float)
 y_vec = np.array([temp_ar[:, -1]]).T # make it a row vector, m x 1
 y_vec = y_vec.astype(int)
-
-error_vec = KFoldCV(X_mat,y_vec,ComputePredictions)
-print(str(error_vec))
 
 # print("error %: " + str(100 * (np.mean(y_new[:, 0] != pred_new))))
 # import pdb; pdb.set_trace()
