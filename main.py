@@ -77,8 +77,11 @@ def NearestNeighborsCV(X_mat,y_vec,num_folds=5,max_neighbors=20):
     mean_error_vec = np.zeros(shape = (1,max_neighbors))
     for index in range(max_neighbors):
         mean_error_vec[index] = statistics.mean(error_mat[index, : ])
-    best_neighbors = min(mean_error_vec)
-    return 
+    best_k = min(mean_error_vec)
+    pred_new = ComputePredictions(X_mat, y_vec, X_new, k)
+    # may want to return X_mat or something to get the mean error for each fold
+    # we'll see once we start graphing
+    return pred_new, mean_error_vec
 
 def Parse(fname, seed):
     all_rows = []
