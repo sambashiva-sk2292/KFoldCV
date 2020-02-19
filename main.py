@@ -55,7 +55,7 @@ def KFoldCV(X_mat,y_vec,ComputePredictions,fold_vec, num_neighbors=20):
         error_vec.append(100 * (np.mean(y_new[:, 0] != pred_new)))
     return error_vec
 
-def ComputePredictions(X_train, y_train, X_new, num_neighbors=20):
+def ComputePredictions(X_train, y_train, X_new, num_neighbors):
     nneighbors = NearestNeighbors(n_neighbors=num_neighbors, algorithm='ball_tree').fit(X_train)
     distances, indices = nneighbors.kneighbors(X_new)
     pred_new = list()
@@ -80,7 +80,8 @@ def NearestNeighborsCV(X_mat,y_vec,num_folds=5,max_neighbors=20):
     for index in range(max_neighbors):
         mean_error_vec[index] = statistics.mean(error_mat[index, : ])
     best_k = min(mean_error_vec)
-    pred_new = ComputePredictions(X_mat, y_vec, X_new, k)
+    k = np.where(mean_error_vec == best_k)
+    pred_new = CompkutePredictions(X_mat, y_vec, X_new, k+1)
     # may want to return X_mat or something to get the mean error for each fold
     # we'll see once we start graphing
     return pred_new, mean_error_vec
@@ -127,3 +128,21 @@ y_vec = y_vec.astype(int)
 
 # print("error %: " + str(100 * (np.mean(y_new[:, 0] != pred_new))))
 # import pdb; pdb.set_trace()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
