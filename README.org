@@ -16,6 +16,25 @@ python3 -m venv ./.venv
 #+BEGIN_SRC
 . ./.venv/bin/activate
 #+END_SRC
+**** 1.4.1 You can use an easy to remember bash alias to activate the venv
+***** 1.4.1.1 Open your ~/.bashrc
+#+BEGIN_SRC
+vim ~/.bashrc
+#+END_SRC
+***** 1.4.1.2 Add this line to your ~/.bashrc
+#+BEGIN_SRC
+alias act=". ./.venv/bin/activate"
+#+END_SRC
+You can replace act with any valid bash identifier you want.
+***** 1.4.1.3 Now reload your ~/.bashrc
+#+BEGIN_SRC
+source ~/.bashrc
+#+END_SRC
+***** 1.4.1.4 Now you can use the "act" command
+#+BEGIN_SRC
+act
+#+END_SRC
+This will be saved on all future shells sessions for your current user.
 *** 1.5. Install module requirements
 #+BEGIN_SRC
 pip3 install -r ./requirements.txt

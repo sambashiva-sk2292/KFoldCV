@@ -30,7 +30,7 @@ matplotlib.rc('font', size=24)
 # in NearestNeighborCV: with the X_mat, y_vec, best_k, test with X_new at the end
 # return what is specified in rubric
 
-def KFoldCV(X_mat,y_vec,ComputePredictions,fold_vec):
+def KFoldCV(X_mat,y_vec,ComputePredictions,fold_vec, num_neighbors=20):
     error_vec = list()
     X_subsets = list()
     Y_subsets = list()
@@ -51,7 +51,7 @@ def KFoldCV(X_mat,y_vec,ComputePredictions,fold_vec):
         del y_train[i]
         y_train=np.concatenate(y_train)
         y_new=Y_subsets[i]
-        pred_new=ComputePredictions(X_train,y_train,X_new)
+        pred_new=ComputePredictions(X_train,y_train,X_new,num_neighbors)
         error_vec.append(100 * (np.mean(y_new[:, 0] != pred_new)))
     return error_vec
 
@@ -73,7 +73,7 @@ def NearestNeighborsCV(X_mat,y_vec,num_folds=5,max_neighbors=20):
     error_mat = np.zeros(shape = (num_folds, max_neighbors))
     error_mat = error_mat.transpose
     for out_index in range(max_neighbors):
-        error_vec = KFoldCV(X_mat, y_vec, ComputePredictions, validation_fold_vec)
+        error_vec = KFoldCV(X_mat, y_vec, ComputePredictions, validation_fold_vec, out_index + 1)
         for inner_index in range(num_folds):
             error_mat[out_index, inner_index] = error_vec[inner_index]
     mean_error_vec = np.zeros(shape = (1,max_neighbors))
@@ -114,11 +114,10 @@ seed must be an int
     print(help_str)
     exit(0)
 
-stepSize = float(sys.argv[1])
-maxiterations = int(sys.argv[2])
+num_folds = int(sys.argv[1])
+max_neighbors = int(sys.argv[2])
 seed = int(sys.argv[3])
 temp_ar = Parse("spam.data", seed)
-
 # temp_ar is randomly shuffled at this point
 num_rows = temp_ar.shape[0]
 
