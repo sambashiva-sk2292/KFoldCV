@@ -3,6 +3,7 @@
 import os, sys
 import numpy as np
 import sklearn
+import random
 from sklearn import metrics
 from sklearn.neighbors import NearestNeighbors
 import sys
@@ -48,7 +49,6 @@ def KFoldCV(X_mat,y_vec,ComputePredictions,fold_vec, num_neighbors):
         #print(X_train[i])  
         del X_train[i]
         X_train=np.concatenate(X_train)
-        print(X_train.shape)
         X_new=X_subsets[i]
         y_train=copy.deepcopy(y_subsets)
         del y_train[i]
@@ -58,6 +58,7 @@ def KFoldCV(X_mat,y_vec,ComputePredictions,fold_vec, num_neighbors):
         error_vec.append(100 * (np.mean(y_new[:, 0] != pred_new)))
     return error_vec
 
+# this is the default one
 def ComputePredictions(X_train, y_train, X_new, num_neighbors):
     nneighbors = NearestNeighbors(n_neighbors=num_neighbors, algorithm='ball_tree').fit(X_train)
     distances, indices = nneighbors.kneighbors(X_new)
@@ -70,23 +71,40 @@ def ComputePredictions(X_train, y_train, X_new, num_neighbors):
     pred_new = np.array(pred_new)
     return pred_new
 
+# this is the best one
+##def Best_ComputePredictions(X_train, y_train, X_new):
+## get the best k neighbour by NearestNeighborsCV
+## use default ComputePredictions to get prediction
+
+# this is the overfit one
+##def Over_ComputePredictions(X_train, y_train, X_new):
+## get the best k neighbour + 1 by NearestNeighborsCV
+## use default ComputePredictions to get prediction
+
+# this is the underfit one
+##def Under_ComputePredictions(X_train, y_train, X_new):
+## get the most frequent one as prediction
+
 def NearestNeighborsCV(X_mat,y_vec,num_folds=5,max_neighbors=20):
     num_rows = X_mat.shape[0]
     validation_fold_vec = np.repeat(np.arange(1,num_folds+1), num_rows/5, axis = 0)
-    np.random.shuffle(validation_fold_vec)
-    print(num_rows)
-    print(validation_fold_vec.shape)
+    random.shuffle(validation_fold_vec)
+    print(validation_fold_vec[4])
+    error_mat = list();
     for i in range(max_neighbors):
         error_vec = KFoldCV(X_mat, y_vec, ComputePredictions, validation_fold_vec, i + 1)
         print(error_vec)
-        error_mat = np.append(error_vec)
-        print(error_mat.shape)
-    mean_error_vec = np.zeros(shape = (1,max_neighbors))
+        error_mat.append(error_vec)
+    print(error_mat)
+
+    mean_error_vec = list()
     for index in range(max_neighbors):
-        mean_error_vec[index] = statistics.mean(error_mat[index, : ])
+        mean_error_vec.append(statistics.mean(error_mat[index]))
     best_k = min(mean_error_vec)
-    k = np.where(mean_error_vec == best_k)
-    pred_new = CompkutePredictions(X_mat, y_vec, X_new, k+1)
+    k = mean_error_vec.index(min(mean_error_vec)) + 1
+    print(mean_error_vec)
+    print(best_k)
+    print(k)
     # may want to return X_mat or something to get the mean error for each fold
     # we'll see once we start graphing
     return pred_new, mean_error_vec,best_k,k
