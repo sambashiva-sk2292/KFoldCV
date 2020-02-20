@@ -6,6 +6,7 @@ import sklearn
 import random
 from sklearn import metrics
 from sklearn.neighbors import NearestNeighbors
+from sklearn.model_selection import train_test_split
 import sys
 import scipy
 from scipy import stats
@@ -44,7 +45,7 @@ def KFoldCV(X_mat,y_vec,function,fold_vec, num_neighbors):
         del y_train[i]
         y_train=np.concatenate(y_train)
         y_new=y_subsets[i]
-        pred_new=funciton(X_train,y_train,X_new,num_neighbors)
+        pred_new=function(X_train,y_train,X_new,num_neighbors)
         error_vec.append(100 * (np.mean(y_new[:, 0] != pred_new)))
     error_vec = np.array(error_vec)
     return error_vec
@@ -76,7 +77,7 @@ def ComputePredictions(X_train, y_train, X_new, num_neighbors):
 ##def Under_ComputePredictions(X_train, y_train, X_new):
 ## get the most frequent one as prediction
 
-def NearestNeighborsCV(X_mat,y_vec,num_folds=5,max_neighbors=20):
+def NearestNeighborsCV(X_mat,y_vec,X_new,num_folds=5,max_neighbors=20):
     num_rows = X_mat.shape[0]
     validation_fold_vec = np.random.randint(1, num_folds + 1, num_rows)
     # validation_fold_vec = np.repeat(np.arange(1,num_folds+1), num_rows/5, axis = 0)
@@ -86,9 +87,8 @@ def NearestNeighborsCV(X_mat,y_vec,num_folds=5,max_neighbors=20):
     for i in range(max_neighbors):
         error_vec = KFoldCV(X_mat, y_vec, ComputePredictions, validation_fold_vec, i + 1)
         error_mat[:, i] = error_vec
-
     mean_error_vec = list()
-    for index in range(max_neighbors):p
+    for index in range(max_neighbors):
         mean_error_vec.append(statistics.mean(error_mat[:, index]))
     min_error = min(mean_error_vec)
     k = mean_error_vec.index(min(mean_error_vec)) + 1
@@ -96,7 +96,7 @@ def NearestNeighborsCV(X_mat,y_vec,num_folds=5,max_neighbors=20):
     print("min_error = " + str(min_error))
     print("k = " + str(k))
     # what train test split do we do here?
-    # pred_new = ?
+    pred_new = ComputePredictions(X_mat, y_vec, X_new, k)
     # may want to return X_mat or something to get the mean error for each fold
     # we'll see once we start graphing
     return pred_new, mean_error_vec,min_error,k
@@ -136,10 +136,13 @@ temp_ar = Parse("spam.data", seed)
 # temp_ar is randomly shuffled at this point
 num_rows = temp_ar.shape[0]
 
-X_mat = temp_ar[:, 0:-1] # m x n
-X_mat = X_mat.astype(float)
-y_vec = np.array([temp_ar[:, -1]]).T # make it a row vector, m x 1
-y_vec = y_vec.astype(int)
+X = temp_ar[:, 0:-1] # m x n
+X = X.astype(float)
+y = np.array([temp_ar[:, -1]]).T # make it a row vector, m x 1
+y = y.astype(int)
+
+# no harm in shuffling twice, this function is easier to read than what we had before
+X_mat, X_new, y_vec, y_new = train_test_split(X, y, test_size=0.2)
 
 # print("error %: " + str(100 * (np.mean(y_new[:, 0] != pred_new))))
 # import pdb; pdb.set_trace()
@@ -147,8 +150,8 @@ y_vec = y_vec.astype(int)
 #Use NearestNeighborsCV with the whole data set as the training inputs (X_mat/y_vec). 
 X_New = np.zeros(shape = (1, num_rows))
 # we should still do a random 80/20 train/test split when we call NearestNeighborsCV
-y_Prediction,mean_validation_error,min_error,best_neighbour = NearestNeighborsCV(X_mat,y_vec,5,20)
+pred_new,mean_validation_error,min_error,k = NearestNeighborsCV(X_mat,y_vec, X_new, 5,20)
 
 print(mean_validation_error)
 print(min_error)
-print(best_neighbour)
+print(k)
