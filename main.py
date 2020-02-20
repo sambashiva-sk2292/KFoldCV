@@ -1,4 +1,4 @@
-# This Python file uses the following encoding: utf-8
+# This Python file uses the following encoding: iso-8859-1
 
 import os, sys
 import numpy as np
@@ -22,16 +22,7 @@ from matplotlib.pyplot import figure
 figure(num=None, figsize=(10, 8), dpi=80, facecolor='w', edgecolor='k')
 matplotlib.rc('font', size=24)
 
-# TODO: Use the fold_vec and validation_fold_vec
-
-# These are row vectors which tell you what fold each row is in
-# This will make it easier to check after the fact and is what is specified
-# in the rubric
-
-# in NearestNeighborCV: with the X_mat, y_vec, best_k, test with X_new at the end
-# return what is specified in rubric
-
-def KFoldCV(X_mat,y_vec,ComputePredictions,fold_vec, num_neighbors):
+def KFoldCV(X_mat,y_vec,function,fold_vec, num_neighbors):
     error_vec = list()
     X_subsets = list()
     y_subsets = list()
@@ -46,7 +37,6 @@ def KFoldCV(X_mat,y_vec,ComputePredictions,fold_vec, num_neighbors):
         y_subsets.append(np.copy(y_vec[row_nums]))
     for i in range(num_folds):
         X_train=copy.deepcopy(X_subsets)
-        #print(X_train[i])  
         del X_train[i]
         X_train=np.concatenate(X_train)
         X_new=X_subsets[i]
@@ -54,8 +44,9 @@ def KFoldCV(X_mat,y_vec,ComputePredictions,fold_vec, num_neighbors):
         del y_train[i]
         y_train=np.concatenate(y_train)
         y_new=y_subsets[i]
-        pred_new=ComputePredictions(X_train,y_train,X_new,num_neighbors)
+        pred_new=funciton(X_train,y_train,X_new,num_neighbors)
         error_vec.append(100 * (np.mean(y_new[:, 0] != pred_new)))
+    error_vec = np.array(error_vec)
     return error_vec
 
 # this is the default one
@@ -87,27 +78,28 @@ def ComputePredictions(X_train, y_train, X_new, num_neighbors):
 
 def NearestNeighborsCV(X_mat,y_vec,num_folds=5,max_neighbors=20):
     num_rows = X_mat.shape[0]
-    validation_fold_vec = np.repeat(np.arange(1,num_folds+1), num_rows/5, axis = 0)
+    validation_fold_vec = np.random.randint(1, num_folds + 1, num_rows)
+    # validation_fold_vec = np.repeat(np.arange(1,num_folds+1), num_rows/5, axis = 0)
     random.shuffle(validation_fold_vec)
-    print(validation_fold_vec[4])
-    error_mat = list();
+    # error_mat is a num_fold x max_neighbors matrix
+    error_mat = np.zeros((num_folds, max_neighbors), dtype=float)
     for i in range(max_neighbors):
         error_vec = KFoldCV(X_mat, y_vec, ComputePredictions, validation_fold_vec, i + 1)
-        print(error_vec)
-        error_mat.append(error_vec)
-    print(error_mat)
+        error_mat[:, i] = error_vec
 
     mean_error_vec = list()
-    for index in range(max_neighbors):
-        mean_error_vec.append(statistics.mean(error_mat[index]))
-    best_k = min(mean_error_vec)
+    for index in range(max_neighbors):p
+        mean_error_vec.append(statistics.mean(error_mat[:, index]))
+    min_error = min(mean_error_vec)
     k = mean_error_vec.index(min(mean_error_vec)) + 1
-    print(mean_error_vec)
-    print(best_k)
-    print(k)
+    print("mean_error_vec = " + str(mean_error_vec))
+    print("min_error = " + str(min_error))
+    print("k = " + str(k))
+    # what train test split do we do here?
+    # pred_new = ?
     # may want to return X_mat or something to get the mean error for each fold
     # we'll see once we start graphing
-    return pred_new, mean_error_vec,best_k,k
+    return pred_new, mean_error_vec,min_error,k
 
 def Parse(fname, seed):
     all_rows = []
@@ -154,26 +146,9 @@ y_vec = y_vec.astype(int)
 
 #Use NearestNeighborsCV with the whole data set as the training inputs (X_mat/y_vec). 
 X_New = np.zeros(shape = (1, num_rows))
+# we should still do a random 80/20 train/test split when we call NearestNeighborsCV
 y_Prediction,mean_validation_error,min_error,best_neighbour = NearestNeighborsCV(X_mat,y_vec,5,20)
 
-print (mean_validation_error)
-print (min_error)
-print (best_neighbour)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+print(mean_validation_error)
+print(min_error)
+print(best_neighbour)
