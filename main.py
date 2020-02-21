@@ -99,7 +99,13 @@ def NearestNeighborsCV(X_mat,y_vec,X_new,num_folds=5,max_neighbors=20):
     pred_new = ComputePredictions(X_mat, y_vec, X_new, k)
     # may want to return X_mat or something to get the mean error for each fold
     # we'll see once we start graphing
-    return pred_new, mean_error_vec,min_error,k
+    return pred_new, mean_error_vec, min_error, k
+
+def OneNearestNeighborsCV():
+    pass
+
+def BaselineCV():
+    pass
 
 def Parse(fname, seed):
     all_rows = []
@@ -150,7 +156,16 @@ X_mat, X_new, y_vec, y_new = train_test_split(X, y, test_size=0.2)
 #Use NearestNeighborsCV with the whole data set as the training inputs (X_mat/y_vec). 
 X_New = np.zeros(shape = (1, num_rows))
 # we should still do a random 80/20 train/test split when we call NearestNeighborsCV
-pred_new,mean_validation_error,min_error,k = NearestNeighborsCV(X_mat,y_vec, X_new, 5,20)
+pred_new,mean_validation_error,min_error,k = NearestNeighborsCV(X, y, X_new, 5, 20)
+x = [i for i in range(1, len(mean_validation_error) + 1)]
+plt.plot(x, mean_validation_error, c="red", linewidth=3)
+plt.scatter(k, min_error, marker='o', edgecolors='r', s=160, facecolor='none', linewidth=3)
+plt.xlabel("Number of Neighbors")
+plt.ylabel("Mean Validation Error %")
+plt.legend()
+plt.savefig("plot.png")
+
+# we have to plot train and validation error with 1 through max_neighbors
 
 print(mean_validation_error)
 print(min_error)
