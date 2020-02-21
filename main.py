@@ -20,7 +20,7 @@ import statistics
 warnings.simplefilter('error') # treat warnings as errors
 
 from matplotlib.pyplot import figure
-figure(num=None, figsize=(10, 8), dpi=80, facecolor='w', edgecolor='k')
+figure(num=None, figsize=(15, 8), dpi=80, facecolor='w', edgecolor='k')
 matplotlib.rc('font', size=24)
 
 def KFoldCV(X_mat,y_vec,function,fold_vec, num_neighbors):
@@ -50,32 +50,24 @@ def KFoldCV(X_mat,y_vec,function,fold_vec, num_neighbors):
     error_vec = np.array(error_vec)
     return error_vec
 
-# this is the default one
 def ComputePredictions(X_train, y_train, X_new, num_neighbors):
     nneighbors = NearestNeighbors(n_neighbors=num_neighbors, algorithm='ball_tree').fit(X_train)
     distances, indices = nneighbors.kneighbors(X_new)
     pred_new = list()
     for i in range(X_new.shape[0]):
-        if (y_train[indices[i]] == 1).sum() > (num_neighbors / 2):
+        count = (y_train[indices[i]] == 1).sum()
+        if count > (num_neighbors / 2):
             pred_new.append(1)
+        elif count == (num_neighbors / 2):
+            coin_flip = np.random.randint(0, 2, 1)[0]
+            if(coin_flip == 1):
+                pred_new.append(1)
+            else:
+                pred_new.append(0)
         else:
             pred_new.append(0)
     pred_new = np.array(pred_new)
     return pred_new
-
-# this is the best one
-##def Best_ComputePredictions(X_train, y_train, X_new):
-## get the best k neighbour by NearestNeighborsCV
-## use default ComputePredictions to get prediction
-
-# this is the overfit one
-##def Over_ComputePredictions(X_train, y_train, X_new):
-## get the best k neighbour + 1 by NearestNeighborsCV
-## use default ComputePredictions to get prediction
-
-# this is the underfit one
-##def Under_ComputePredictions(X_train, y_train, X_new):
-## get the most frequent one as prediction
 
 def NearestNeighborsCV(X_mat,y_vec,X_new,num_folds=5,max_neighbors=20):
     num_rows = X_mat.shape[0]
@@ -91,23 +83,29 @@ def NearestNeighborsCV(X_mat,y_vec,X_new,num_folds=5,max_neighbors=20):
     for index in range(max_neighbors):
         mean_error_vec.append(statistics.mean(error_mat[:, index]))
     min_error = min(mean_error_vec)
-    k = mean_error_vec.index(min(mean_error_vec)) + 1
+    best_neighbours = mean_error_vec.index(min(mean_error_vec)) + 1
     print("mean_error_vec = " + str(mean_error_vec))
     print("min_error = " + str(min_error))
-    print("k = " + str(k))
+    print("best_neighbours = " + str(best_neighbours))
     # what train test split do we do here?
-    pred_new = ComputePredictions(X_mat, y_vec, X_new, k)
+    pred_new = np.array([])
+    if(X_new.shape[0] != 0):
+        pred_new = ComputePredictions(X_mat, y_vec, X_new, best_neighbours)
     # may want to return X_mat or something to get the mean error for each fold
     # we'll see once we start graphing
-    return pred_new, mean_error_vec, min_error, k
+    return pred_new, mean_error_vec, min_error, best_neighbours
 
-def OneNearestNeighborsCV():
-    pass
+def OneNearestNeighbors(X_mat, y_vec, X_new):
+    pred_new = ComputePredictions(X_mat, y_vec, X_new, 1)
+    return pred_new
 
-def BaselineCV():
-    pass
+def Baseline(X_mat, y_vec, X_new):
+    pred_new = np.zeros((X_new.shape[0],))
+    if (y_vec == 1).sum() > (y_vec.shape[0] / 2):
+        pred_new = np.where(pred_new == 0, 1, pred_new)
+    return pred_new
 
-def Parse(fname, seed):
+def Parse(fname):
     all_rows = []
     with open(fname) as fp:
         for line in fp:
@@ -122,7 +120,6 @@ def Parse(fname, seed):
         if(std == 0):
             print("col " + str(col) + " has an std of 0")
         temp_ar[:, col] = stats.zscore(temp_ar[:, col])
-    np.random.seed(seed)
     np.random.shuffle(temp_ar) # shuffle rows, set of columns remain the same
     return temp_ar
 
@@ -138,7 +135,8 @@ seed must be an int
 num_folds = int(sys.argv[1])
 max_neighbors = int(sys.argv[2])
 seed = int(sys.argv[3])
-temp_ar = Parse("spam.data", seed)
+np.random.seed(seed)
+temp_ar = Parse("spam.data")
 # temp_ar is randomly shuffled at this point
 num_rows = temp_ar.shape[0]
 
@@ -147,26 +145,34 @@ X = X.astype(float)
 y = np.array([temp_ar[:, -1]]).T # make it a row vector, m x 1
 y = y.astype(int)
 
-# no harm in shuffling twice, this function is easier to read than what we had before
-X_mat, X_new, y_vec, y_new = train_test_split(X, y, test_size=0.2)
-
 # print("error %: " + str(100 * (np.mean(y_new[:, 0] != pred_new))))
 # import pdb; pdb.set_trace()
 
-#Use NearestNeighborsCV with the whole data set as the training inputs (X_mat/y_vec). 
-X_New = np.zeros(shape = (1, num_rows))
-# we should still do a random 80/20 train/test split when we call NearestNeighborsCV
-pred_new,mean_validation_error,min_error,k = NearestNeighborsCV(X, y, X_new, 5, 20)
+pred_new,mean_validation_error,min_error,best_neighbours = NearestNeighborsCV(X, y, np.array([]), 5, 20)
 x = [i for i in range(1, len(mean_validation_error) + 1)]
-plt.plot(x, mean_validation_error, c="red", linewidth=3)
-plt.scatter(k, min_error, marker='o', edgecolors='r', s=160, facecolor='none', linewidth=3)
+plt.plot(x, mean_validation_error, c="red", linewidth=3, label='validation')
+plt.scatter(best_neighbours, min_error, marker='o', edgecolors='r', s=160, facecolor='none', linewidth=3, label='minimum')
 plt.xlabel("Number of Neighbors")
 plt.ylabel("Mean Validation Error %")
 plt.legend()
-plt.savefig("plot.png")
+plt.savefig("validation_error.png")
+plt.clf()
 
-# we have to plot train and validation error with 1 through max_neighbors
+num_rows = X.shape[0]
+test_fold_vec = np.random.randint(1, 4 + 1, num_rows)
+test_error_vec = KFoldCV(X, y, ComputePredictions, test_fold_vec, best_neighbours)
+plt.scatter(test_error_vec, 4 * [str(best_neighbours) + '-NearestNeighbors'])
+plt.xlabel("Mean Validation Error %")
+plt.ylabel("algorithm")
+plt.savefig("test_errors.png")
+plt.clf()
+# TODO CREATE TEST FOLD VEC
+# IT WILL USE THE ENTIRE DATASET
+# WE SPLIT IT INTO FOUR PARTS AND USE ALL THREE ALGORITHMS
+# YOU SHOULD ACCOUNT FOR EDGE CASE WHERE 1s equal 0s
+# IT'LL BE EASY TO JUST RANDOMLY PICK A WINNER
 
-print(mean_validation_error)
-print(min_error)
-print(k)
+# 5 20 5 gives us k = 1
+# 5 20 1 gives us k = 1
+# 10 20 2 gives us k = 1
+# 8 20 2 ives us k = 3
