@@ -45,7 +45,11 @@ def KFoldCV(X_mat,y_vec,function,fold_vec, num_neighbors):
         del y_train[i]
         y_train=np.concatenate(y_train)
         y_new=y_subsets[i]
+        # three times?
         pred_new=function(X_train,y_train,X_new,num_neighbors)
+        pred_new=function(X_train,y_train,X_new,5,20)
+        pred_new=function(X_train,y_train,X_new)
+
         error_vec.append(100 * (np.mean(y_new[:, 0] != pred_new)))
     error_vec = np.array(error_vec)
     return error_vec
@@ -119,7 +123,40 @@ def Parse(fname):
         std = np.std(temp_ar[:, col])
         if(std == 0):
             print("col " + str(col) + " has an std of 0")
-        temp_ar[:, col] = stats.zscore(temp_ar[:, col])
+      atter(test_error_vec, 4 * [str(best_neighbours) + '-NearestNeighbors'])
+plt.xlabel("Mean Validation Error %")
+plt.ylabel("algorithm")
+plt.savefig("test_errors.png")
+plt.clf()
+
+# a table of counts with a row for each fold
+X_subsets = list()
+y_subsets = list()
+num_rows = X_mat.shape[0]
+for i in range(1, 4 + 1):
+    row_nums = list()
+    for j in range(test_fold_vec.shape[0]):
+        if(i == test_fold_vec[j]):
+            row_nums.append(j)
+    X_subsets.append(np.copy(X_mat[row_nums]))
+    y_subsets.append(np.copy(y_vec[row_nums]))
+print('            y')
+print('  {0: >10} {1: >4} {2: >4}'.format('set', '0', '1'))
+for i in range(num_folds):
+    print('  {0: >10} {1: >4} {2: >4}'.format('Fold'+str(i),                                     
+                                          str(((y_subsets[i] == 0).sum()),
+                                          str((y_subsets[i] == 1).sum())))
+
+    
+# IT WILL USE THE ENTIRE DATASET
+# WE SPLIT IT INTO FOUR PARTS AND USE ALL THREE ALGORITHMS
+# YOU SHOULD ACCOUNT FOR EDGE CASE WHERE 1s equal 0s
+# IT'LL BE EASY TO JUST RANDOMLY PICK A WINNER
+
+# 5 20 5 gives us k = 1
+# 5 20 1 gives us k = 1
+# 10 20 2 gives us k = 1
+# 8 20 2 ives us k = 3  temp_ar[:, col] = stats.zscore(temp_ar[:, col])
     np.random.shuffle(temp_ar) # shuffle rows, set of columns remain the same
     return temp_ar
 
@@ -159,14 +196,33 @@ plt.savefig("validation_error.png")
 plt.clf()
 
 num_rows = X.shape[0]
-test_fold_vec = np.random.randint(1, 4 + 1, num_rows)
+# create random fold vec
+test_fold_vec = np.random.randint(1, 4 + 1, num_rows) 
 test_error_vec = KFoldCV(X, y, ComputePredictions, test_fold_vec, best_neighbours)
 plt.scatter(test_error_vec, 4 * [str(best_neighbours) + '-NearestNeighbors'])
 plt.xlabel("Mean Validation Error %")
 plt.ylabel("algorithm")
 plt.savefig("test_errors.png")
 plt.clf()
-# TODO CREATE TEST FOLD VEC
+
+# a table of counts with a row for each fold
+X_subsets = list()
+y_subsets = list()
+num_rows = X_mat.shape[0]
+for i in range(1, 4 + 1):
+    row_nums = list()
+    for j in range(test_fold_vec.shape[0]):
+        if(i == test_fold_vec[j]):
+            row_nums.append(j)
+    X_subsets.append(np.copy(X_mat[row_nums]))
+    y_subsets.append(np.copy(y_vec[row_nums]))
+print('            y')
+print('  {0: >10} {1: >4} {2: >4}'.format('set', '0', '1'))
+for i in range(num_folds):
+    print('  {0: >10} {1: >4} {2: >4}'.format('Fold'+str(i),                                     
+                                          str(((y_subsets[i] == 0).sum()),
+                                          str((y_subsets[i] == 1).sum())))
+
 # IT WILL USE THE ENTIRE DATASET
 # WE SPLIT IT INTO FOUR PARTS AND USE ALL THREE ALGORITHMS
 # YOU SHOULD ACCOUNT FOR EDGE CASE WHERE 1s equal 0s
