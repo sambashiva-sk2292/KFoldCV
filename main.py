@@ -173,7 +173,6 @@ num_rows = X.shape[0]
 # create random fold vec
 test_fold_num = 4
 test_fold_vec = np.random.randint(1, test_fold_num + 1, num_rows)
-import pdb; pdb.set_trace()
 test_error_vec_baseline = KFoldCV(X, y, Baseline, test_fold_vec, best_neighbours)
 plt.scatter(test_error_vec_baseline, test_fold_num * ['Baseline'], color='black')
 test_error_vec_nncv = KFoldCV(X, y, NearestNeighborsCV, test_fold_vec, best_neighbours)
