@@ -145,7 +145,7 @@ X = X.astype(float)
 y = np.array([temp_ar[:, -1]]).T # make it a row vector, m x 1
 y = y.astype(int)
 
-pred_new,mean_validation_error,min_error,best_neighbours = NearestNeighborsCV(X, y, np.array([]), 5, 20)
+pred_new,mean_validation_error,min_error,best_neighbours = NearestNeighborsCV(X, y, np.array([]), num_folds, max_neighbors)
 x = [i for i in range(1, len(mean_validation_error) + 1)]
 plt.plot(x, mean_validation_error, c="red", linewidth=3, label='validation')
 plt.scatter(best_neighbours, min_error, marker='o', edgecolors='r', s=160, facecolor='none', linewidth=3, label='minimum')
