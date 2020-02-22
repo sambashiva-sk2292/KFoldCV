@@ -100,10 +100,6 @@ def NearestNeighborsCV(X_mat,y_vec,X_new,num_folds=5,max_neighbors=20):
     if(X_new.shape[0] != 0):
         pred_new = ComputePredictions(X_mat, y_vec, X_new, best_neighbours)
     return pred_new, mean_error_vec, min_error, best_neighbours, error_mat
-    pred_new = np.array([])
-    if(X_new.shape[0] != 0):
-        pred_new = ComputePredictions(X_mat, y_vec, X_new, best_neighbours)
-    return pred_new, mean_error_vec, min_error, best_neighbours
 
 def OneNearestNeighbors(X_mat, y_vec, X_new):
     pred_new = ComputePredictions(X_mat, y_vec, X_new, 1)
@@ -170,8 +166,6 @@ best_neighbour_4 = np.where(error_fold_4 == np.amin(error_fold_4))[0][0] + 1
 error_fold_5 = error_mat[4]
 min_error_5 = min(error_fold_5)
 best_neighbour_5 = np.where(error_fold_5 == np.amin(error_fold_5))[0][0] + 1
-
-pred_new,mean_validation_error,min_error,best_neighbours = NearestNeighborsCV(X, y, np.array([]), num_folds, max_neighbors)
 
 x = [i for i in range(1, len(mean_validation_error) + 1)]
 plt.plot(x, mean_validation_error, c="red", linewidth=3, label='mean_validation')
