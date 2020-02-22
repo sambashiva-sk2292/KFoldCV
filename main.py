@@ -145,7 +145,7 @@ X = X.astype(float)
 y = np.array([temp_ar[:, -1]]).T 
 y = y.astype(int)
 
-pred_new,mean_validation_error,min_error,best_neighbours, error_mat = NearestNeighborsCV(X, y, np.array([]), 5, 20)
+pred_new,mean_validation_error,min_error,best_neighbours, error_mat = NearestNeighborsCV(X, y, np.array([]), num_folds, max_neighbors)
 
 error_fold_1 = error_mat[0]
 min_error_1 = min(error_fold_1)

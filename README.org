@@ -1,7 +1,8 @@
-* KFoldCV 
-Our KFoldCV is located at
+* KFoldCV
+Our KFoldCV function is located on line 26 of:
 https://github.com/sambashiva-sk2292/KFoldCV/main.py
-** 1. How to run
+** 1. Environment setup
+These steps assume a linux system.
 *** 1.1. First clone the repo 
 git clone https://github.com/sambashiva-sk2292/KFoldCV/
 *** 1.2. Create an arbitrary directory
@@ -39,11 +40,16 @@ This will be saved on all future shells sessions for your current user.
 #+BEGIN_SRC
 pip3 install -r ./requirements.txt
 #+END_SRC
-*** 1.6. Execute
+** 2. Execution
 #+BEGIN_SRC
-python3 main.py <stepSize> <maxiterations> <seed>
+python3 main.py <num-folds> <max-neighbors> <seed>
 #+END_SRC
-stepSize must be a float
-maxiterations must be an int
+num-folds must be a float
+max-neighbors must be an int
 seed must be an int
-
+** 3. Reproduce our results
+#+BEGIN_SRC
+python3 main.py 5 20 3
+#+END_SRC
+Our 5 figures included in the report will be generated in the current working
+directory.
