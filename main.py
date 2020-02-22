@@ -138,9 +138,9 @@ def Parse(fname):
     return temp_ar
 
 if len(sys.argv) < 4:
-    help_str = """Execution example: python3 main.py <stepSize> <maxiterations> <seed>
-stepSize must be a float
-maxiterations must be an int
+    help_str = """Execution example: python3 main.py <No.of folds k> <No. of Nearest neighbors> <seed>
+Folds must be a float
+NN must be an int
 seed must be an int
 """
     print(help_str)
