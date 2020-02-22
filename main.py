@@ -46,7 +46,6 @@ def KFoldCV(X_mat,y_vec,my_function,fold_vec, num_neighbors):
         del y_train[i]
         y_train=np.concatenate(y_train)
         y_new=y_subsets[i]
-        # three times?
         pred_new = None
         if(my_function.__name__ == 'ComputePredictions'):
             pred_new=my_function(X_train,y_train,X_new,num_neighbors)
@@ -100,16 +99,15 @@ def NearestNeighborsCV(X_mat,y_vec,X_new,num_folds=5,max_neighbors=20):
         mean_error_vec.append(statistics.mean(error_mat[:, index]))
     min_error = min(mean_error_vec)
     best_neighbours = mean_error_vec.index(min(mean_error_vec)) + 1
-    print("mean_error_vec = " + str(mean_error_vec))
-    print("min_error = " + str(min_error))
-    print("best_neighbours = " + str(best_neighbours))
-    # what train test split do we do here?
+    #print("mean_error_vec = " + str(mean_error_vec))
+    #print("min_error = " + str(min_error))
+    #print("best_neighbours = " + str(best_neighbours))
     pred_new = np.array([])
     if(X_new.shape[0] != 0):
         pred_new = ComputePredictions(X_mat, y_vec, X_new, best_neighbours)
     # may want to return X_mat or something to get the mean error for each fold
     # we'll see once we start graphing
-    return pred_new, mean_error_vec, min_error, best_neighbours
+    return pred_new, mean_error_vec, min_error, best_neighbours, error_mat
 
 def OneNearestNeighbors(X_mat, y_vec, X_new):
     pred_new = ComputePredictions(X_mat, y_vec, X_new, 1)
@@ -158,15 +156,66 @@ X = X.astype(float)
 y = np.array([temp_ar[:, -1]]).T # make it a row vector, m x 1
 y = y.astype(int)
 
-pred_new,mean_validation_error,min_error,best_neighbours = NearestNeighborsCV(X, y, np.array([]), 5, 20)
+pred_new,mean_validation_error,min_error,best_neighbours, error_mat = NearestNeighborsCV(X, y, np.array([]), 5, 20)
+
+error_fold_1 = error_mat[0]
+min_error_1 = min(error_fold_1)
+best_neighbour_1 = np.where(error_fold_1 == np.amin(error_fold_1))[0][0] + 1
+#print(best_neighbour_1)
+
+error_fold_2 = error_mat[1]
+min_error_2 = min(error_fold_2)
+best_neighbour_2 = np.where(error_fold_2 == np.amin(error_fold_2))[0][0] + 1
+#print(best_neighbour_2)
+
+error_fold_3 = error_mat[2]
+min_error_3 = min(error_fold_3)
+best_neighbour_3 = np.where(error_fold_3 == np.amin(error_fold_3))[0][0] + 1
+#print(best_neighbour_3)
+
+error_fold_4 = error_mat[3]
+min_error_4 = min(error_fold_4)
+best_neighbour_4 = np.where(error_fold_4 == np.amin(error_fold_4))[0][0] + 1
+#print(best_neighbour_4)
+
+error_fold_5 = error_mat[4]
+min_error_5 = min(error_fold_5)
+best_neighbour_5 = np.where(error_fold_5 == np.amin(error_fold_5))[0][0] + 1
+#print(best_neighbour_5)
+
 x = [i for i in range(1, len(mean_validation_error) + 1)]
-plt.plot(x, mean_validation_error, c="red", linewidth=3, label='validation')
+plt.plot(x, mean_validation_error, c="red", linewidth=3, label='mean_validation')
 plt.scatter(best_neighbours, min_error, marker='o', edgecolors='r', s=160, facecolor='none', linewidth=3, label='minimum')
 plt.xlabel("Number of Neighbors")
 plt.ylabel("Mean Validation Error %")
 plt.legend()
 plt.tight_layout()
 plt.savefig("validation_error.png")
+plt.clf()
+
+
+plt.plot(x, mean_validation_error, c="red", linewidth=6, label='mean_validation')
+plt.scatter(best_neighbours, min_error, marker='o', edgecolors='r', s=160, facecolor='none', linewidth=3, label='minimum')
+
+plt.plot(x, error_fold_1, c="black", linewidth=4, label='fold1_validation')
+plt.scatter(best_neighbour_1, min_error_1, marker='o', edgecolors='black', s=150, facecolor='none', linewidth=3, label='minimum')
+
+plt.plot(x, error_fold_2, c="blue", linewidth=4, label='fold2_validation')
+plt.scatter(best_neighbour_2, min_error_2, marker='o', edgecolors='blue', s=150, facecolor='none', linewidth=3, label='minimum')
+
+plt.plot(x, error_fold_3, c="yellow", linewidth=4, label='fold3_validation')
+plt.scatter(best_neighbour_3, min_error_3, marker='o', edgecolors='yellow', s=150, facecolor='none', linewidth=3, label='minimum')
+
+plt.plot(x, error_fold_4, c="pink", linewidth=4, label='fold4_validation')
+plt.scatter(best_neighbour_4, min_error_4, marker='o', edgecolors='pink', s=150, facecolor='none', linewidth=3, label='minimum')
+
+plt.plot(x, error_fold_5, c="green", linewidth=4, label='fold5_validation')
+plt.scatter(best_neighbour_5, min_error_5, marker='o', edgecolors='green', s=150, facecolor='none', linewidth=3, label='minimum')
+plt.xlabel("Number of Neighbors")
+plt.ylabel("Mean Validation Error %")
+plt.legend(ncol=2,fontsize=15)
+plt.tight_layout()
+plt.savefig("extra_validation_error.png")
 plt.clf()
 
 num_rows = X.shape[0]
