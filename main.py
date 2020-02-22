@@ -3,7 +3,6 @@
 import os, sys
 import numpy as np
 import sklearn
-import random
 from sklearn import metrics
 from sklearn.neighbors import NearestNeighbors
 from sklearn.model_selection import train_test_split
@@ -87,9 +86,7 @@ def ComputePredictions(X_train, y_train, X_new, num_neighbors):
 def NearestNeighborsCV(X_mat,y_vec,X_new,num_folds=5,max_neighbors=20):
     num_rows = X_mat.shape[0]
     validation_fold_vec = np.random.randint(1, num_folds + 1, num_rows)
-    # validation_fold_vec = np.repeat(np.arange(1,num_folds+1), num_rows/5, axis = 0)
-    random.shuffle(validation_fold_vec)
-    # error_mat is a num_fold x max_neighbors matrix
+    np.random.shuffle(validation_fold_vec)
     error_mat = np.zeros((num_folds, max_neighbors), dtype=float)
     for i in range(max_neighbors):
         error_vec = KFoldCV(X_mat, y_vec, ComputePredictions, validation_fold_vec, i + 1)
@@ -99,15 +96,14 @@ def NearestNeighborsCV(X_mat,y_vec,X_new,num_folds=5,max_neighbors=20):
         mean_error_vec.append(statistics.mean(error_mat[:, index]))
     min_error = min(mean_error_vec)
     best_neighbours = mean_error_vec.index(min(mean_error_vec)) + 1
-    #print("mean_error_vec = " + str(mean_error_vec))
-    #print("min_error = " + str(min_error))
-    #print("best_neighbours = " + str(best_neighbours))
     pred_new = np.array([])
     if(X_new.shape[0] != 0):
         pred_new = ComputePredictions(X_mat, y_vec, X_new, best_neighbours)
-    # may want to return X_mat or something to get the mean error for each fold
-    # we'll see once we start graphing
     return pred_new, mean_error_vec, min_error, best_neighbours, error_mat
+    pred_new = np.array([])
+    if(X_new.shape[0] != 0):
+        pred_new = ComputePredictions(X_mat, y_vec, X_new, best_neighbours)
+    return pred_new, mean_error_vec, min_error, best_neighbours
 
 def OneNearestNeighbors(X_mat, y_vec, X_new):
     pred_new = ComputePredictions(X_mat, y_vec, X_new, 1)
@@ -127,8 +123,6 @@ def Parse(fname):
             all_rows.append(row)
     temp_ar = np.array(all_rows, dtype=float)
     temp_ar = temp_ar.astype(float)
-    # standardize each column to have ¦Ì = 0 and ¦Ò^(2) = 1
-    # in other words convert all elements to z-scores for each column
     for col in range(temp_ar.shape[1] - 1): # for all but last column (output)
         std = np.std(temp_ar[:, col])
         if(std == 0):
@@ -149,11 +143,10 @@ max_neighbors = int(sys.argv[2])
 seed = int(sys.argv[3])
 np.random.seed(seed)
 temp_ar = Parse("spam.data")
-# temp_ar is randomly shuffled at this point
 
 X = temp_ar[:, 0:-1] # m x n
 X = X.astype(float)
-y = np.array([temp_ar[:, -1]]).T # make it a row vector, m x 1
+y = np.array([temp_ar[:, -1]]).T 
 y = y.astype(int)
 
 pred_new,mean_validation_error,min_error,best_neighbours, error_mat = NearestNeighborsCV(X, y, np.array([]), 5, 20)
@@ -161,27 +154,24 @@ pred_new,mean_validation_error,min_error,best_neighbours, error_mat = NearestNei
 error_fold_1 = error_mat[0]
 min_error_1 = min(error_fold_1)
 best_neighbour_1 = np.where(error_fold_1 == np.amin(error_fold_1))[0][0] + 1
-#print(best_neighbour_1)
 
 error_fold_2 = error_mat[1]
 min_error_2 = min(error_fold_2)
 best_neighbour_2 = np.where(error_fold_2 == np.amin(error_fold_2))[0][0] + 1
-#print(best_neighbour_2)
 
 error_fold_3 = error_mat[2]
 min_error_3 = min(error_fold_3)
 best_neighbour_3 = np.where(error_fold_3 == np.amin(error_fold_3))[0][0] + 1
-#print(best_neighbour_3)
 
 error_fold_4 = error_mat[3]
 min_error_4 = min(error_fold_4)
 best_neighbour_4 = np.where(error_fold_4 == np.amin(error_fold_4))[0][0] + 1
-#print(best_neighbour_4)
 
 error_fold_5 = error_mat[4]
 min_error_5 = min(error_fold_5)
 best_neighbour_5 = np.where(error_fold_5 == np.amin(error_fold_5))[0][0] + 1
-#print(best_neighbour_5)
+
+pred_new,mean_validation_error,min_error,best_neighbours = NearestNeighborsCV(X, y, np.array([]), num_folds, max_neighbors)
 
 x = [i for i in range(1, len(mean_validation_error) + 1)]
 plt.plot(x, mean_validation_error, c="red", linewidth=3, label='mean_validation')
@@ -219,7 +209,6 @@ plt.savefig("extra_validation_error.png")
 plt.clf()
 
 num_rows = X.shape[0]
-# create random fold vec
 test_fold_num = 4
 test_fold_vec = np.random.randint(1, test_fold_num + 1, num_rows)
 test_accuracy_vec_baseline = 100 - KFoldCV(X, y, Baseline, test_fold_vec, best_neighbours)
@@ -274,7 +263,6 @@ for algorithm in auc:
         elif(algorithm == 'one-nn'):
             my_color = 'blue'
         plt.scatter(value, algorithm, color=my_color)
-plt.legend()
 plt.tight_layout()
 plt.savefig("auc_plot.png")
 plt.clf()
@@ -298,13 +286,3 @@ for i in range(test_fold_num):
     print('  {0: >10} {1: >4} {2: >4}'.format('Fold' + str(i),
                                               str(zero_count),
                                               str(one_count)))
-
-# IT WILL USE THE ENTIRE DATASET
-# WE SPLIT IT INTO FOUR PARTS AND USE ALL THREE ALGORITHMS
-# YOU SHOULD ACCOUNT FOR EDGE CASE WHERE 1s equal 0s
-# IT'LL BE EASY TO JUST RANDOMLY PICK A WINNER
-
-# 5 20 5 gives us k = 1
-# 5 20 1 gives us k = 1
-# 10 20 2 gives us k = 1
-# 8 20 2 ives us k = 3
