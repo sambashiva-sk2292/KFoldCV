@@ -173,16 +173,16 @@ num_rows = X.shape[0]
 # create random fold vec
 test_fold_num = 4
 test_fold_vec = np.random.randint(1, test_fold_num + 1, num_rows)
-test_error_vec_baseline = KFoldCV(X, y, Baseline, test_fold_vec, best_neighbours)
-plt.scatter(test_error_vec_baseline, test_fold_num * ['Baseline'], color='black')
-test_error_vec_nncv = KFoldCV(X, y, NearestNeighborsCV, test_fold_vec, best_neighbours)
-plt.scatter(test_error_vec_nncv, test_fold_num * [str(best_neighbours) + '-NN'], color='red')
-test_error_vec_onn = KFoldCV(X, y, OneNearestNeighbors, test_fold_vec, best_neighbours)
-plt.scatter(test_error_vec_onn, test_fold_num * ['OneNN'], color='blue')
-plt.xlabel("Mean Validation Error %")
+test_accuracy_vec_baseline = 100 - KFoldCV(X, y, Baseline, test_fold_vec, best_neighbours)
+plt.scatter(test_accuracy_vec_baseline, test_fold_num * ['Baseline'], color='black')
+test_accuracy_vec_nncv = 100 - KFoldCV(X, y, NearestNeighborsCV, test_fold_vec, best_neighbours)
+plt.scatter(test_accuracy_vec_nncv, test_fold_num * [str(best_neighbours) + '-NN'], color='red')
+test_accuracy_vec_onn = 100 - KFoldCV(X, y, OneNearestNeighbors, test_fold_vec, best_neighbours)
+plt.scatter(test_accuracy_vec_onn, test_fold_num * ['OneNN'], color='blue')
+plt.xlabel("accuracy.percent %")
 plt.ylabel("algorithm")
 plt.tight_layout()
-plt.savefig("test_errors.png")
+plt.savefig("test_accuracy.png")
 plt.clf()
 
 auc = {'baseline': [], 'k-nn': [], 'one-nn': []}
