@@ -123,6 +123,7 @@ def Parse(fname):
         std = np.std(temp_ar[:, col])
         if(std == 0):
             print("col " + str(col) + " has an std of 0")
+        temp_ar[:, col] = stats.zscore(temp_ar[:, col])
     return temp_ar
 
 if len(sys.argv) < 4:
@@ -144,6 +145,8 @@ X = temp_ar[:, 0:-1] # m x n
 X = X.astype(float)
 y = np.array([temp_ar[:, -1]]).T 
 y = y.astype(int)
+
+import pdb; pdb.set_trace()
 
 pred_new,mean_validation_error,min_error,best_neighbours, error_mat = NearestNeighborsCV(X, y, np.array([]), num_folds, max_neighbors)
 
